@@ -1,8 +1,8 @@
 import { neon } from '@neondatabase/serverless';
 
 export const handler = async function(event, context) {
-    // Eenvoudige beveiliging - alleen POST requests
-    if (event.httpMethod !== 'POST') {
+    // Accepteer zowel GET als POST requests
+    if (!['GET', 'POST'].includes(event.httpMethod)) {
         return {
             statusCode: 405,
             body: JSON.stringify({ error: 'Method Not Allowed' })
@@ -39,7 +39,7 @@ export const handler = async function(event, context) {
             )
         `;
 
-        // Create index voor snellere queries
+        // Create indexes
         await sql`CREATE INDEX IF NOT EXISTS idx_order_email ON orders(customer_email)`;
         await sql`CREATE INDEX IF NOT EXISTS idx_order_created ON orders(created_at)`;
 
@@ -47,7 +47,8 @@ export const handler = async function(event, context) {
             statusCode: 200,
             body: JSON.stringify({ 
                 success: true,
-                message: 'Database successfully initialized' 
+                message: 'Database successfully initialized',
+                method: event.httpMethod
             })
         };
 
@@ -57,8 +58,7 @@ export const handler = async function(event, context) {
             statusCode: 500,
             body: JSON.stringify({ 
                 success: false,
-                error: 'Database initialization failed',
-                details: error.message 
+                error: 'Database initialization failed: ' + error.message
             })
         };
     }
