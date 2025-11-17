@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bestelling Geslaagd - TechShop</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">TechShop</a>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card border-success">
+                    <div class="card-body text-center py-5">
+                        <div class="mb-4">
+                            <div class="success-icon">🎉</div>
+                            <h1 class="text-success">Betaling Geslaagd!</h1>
+                            <p class="lead">Bedankt voor je aankoop bij TechShop</p>
+                        </div>
+                        
+                        <div id="orderDetails" class="text-start mb-4">
+                            <!-- Order details worden hier ingeladen -->
+                        </div>
+
+                        <div class="mt-4">
+                            <p>Je ontvangt een bevestigingsmail met alle details.</p>
+                            <div class="d-grid gap-2 d-md-block">
+                                <a href="index.html" class="btn btn-primary">Nog een product kopen</a>
+                                <a href="admin.html" class="btn btn-outline-secondary">Admin Overzicht</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const orderDataEncoded = urlParams.get('orderData');
+            
+            if (orderDataEncoded) {
+                const orderData = JSON.parse(decodeURIComponent(orderDataEncoded));
+                displayOrderDetails(orderData);
+                
+                // Opslaan in database (optioneel)
+                saveOrderToDatabase(orderData);
+            } else {
+                document.getElementById('orderDetails').innerHTML = `
+                    <div class="alert alert-warning">
+                        Geen order informatie gevonden.
+                    </div>
+                `;
+            }
+        });
+
+        function displayOrderDetails(orderData) {
+            const shippingHTML = orderData.shippingAddress ? `
+                <div class="mt-3">
+                    <h6>Verzendadres:</h6>
+                    <p>${orderData.customerName}<br>
+                    ${orderData.shippingAddress.addressLine1} ${orderData.shippingAddress.addressLine2}<br>
+                    ${orderData.shippingAddress.postalCode} ${orderData.shippingAddress.city}<br>
+                    ${orderData.shippingAddress.country}</p>
+                </div>
+            ` : '<p><em>Geen verzendadres opgegeven</em></p>';
+
+            document.getElementById('orderDetails').innerHTML = `
+                <div class="order-summary">
+                    <h5>Order Samenvatting:</h5>
+                    <p><strong>Order ID:</strong> ${orderData.orderId}</p>
+                    <p><strong>Product:</strong> ${orderData.productName}</p>
+                    <p><strong>Aantal:</strong> ${orderData.quantity}</p>
+                    <p><strong>Prijs per stuk:</strong> €${orderData.productPrice.toFixed(2)}</p>
+                    <p><strong>Totaalbedrag:</strong> €${orderData.amount}</p>
+                    <p><strong>Klant:</strong> ${orderData.customerName}</p>
+                    <p><strong>Email:</strong> ${orderData.customerEmail}</p>
+                    ${shippingHTML}
+                </div>
+            `;
+        }
+
+        async function saveOrderToDatabase(orderData) {
+            try {
+                const response = await fetch('/.netlify/functions/create-order', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(orderData)
+                });
+                
+                if (response.ok) {
+                    console.log('Order opgeslagen in database');
+                }
+            } catch (error) {
+                console.error('Database opslag mislukt:', error);
+            }
+        }
+    </script>
+</body>
+</html>
