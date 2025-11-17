@@ -1,11 +1,5 @@
 {
   "name": "techshop",
-  "version": "1.0.0",
-  "description": "TechShop Webwinkel",
-  "main": "index.html",
-  "scripts": {
-    "build": "echo 'No build process needed'"
-  },
   "dependencies": {
     "@neondatabase/serverless": "^0.9.0"
   }
