@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Orders Overzicht</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container">
+            <span class="navbar-brand">TechShop Admin</span>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h1>Orders Overzicht</h1>
+        <div id="orders-list" class="mt-4">
+            <div class="text-center">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p>Orders laden...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadOrders() {
+            try {
+                const response = await fetch('/.netlify/functions/get-orders');
+                const orders = await response.json();
+                
+                const ordersList = document.getElementById('orders-list');
+                
+                if (orders.length === 0) {
+                    ordersList.innerHTML = '<div class="alert alert-info">Geen orders gevonden</div>';
+                    return;
+                }
+
+                ordersList.innerHTML = orders.map(order => `
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Order #${order.id}</h5>
+                            <p><strong>PayPal Order ID:</strong> ${order.order_id}</p>
+                            <p><strong>Klant:</strong> ${order.customer_name} (${order.customer_email})</p>
+                            <p><strong>Product:</strong> ${order.product_name} × ${order.quantity}</p>
+                            <p><strong>Bedrag:</strong> €${order.amount} ${order.currency}</p>
+                            <p><strong>Datum:</strong> ${new Date(order.created_at).toLocaleString('nl-NL')}</p>
+                            <p><strong>Status:</strong> <span class="badge bg-success">${order.status}</span></p>
+                            ${order.address_line1 ? `
+                                <div class="mt-2">
+                                    <strong>Verzendadres:</strong><br>
+                                    ${order.address_line1} ${order.address_line2}<br>
+                                    ${order.postal_code} ${order.city}<br>
+                                    ${order.country}
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `).join('');
+                
+            } catch (error) {
+                document.getElementById('orders-list').innerHTML = `
+                    <div class="alert alert-danger">
+                        Fout bij laden orders: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        // Laad orders wanneer pagina geladen is
+        document.addEventListener('DOMContentLoaded', loadOrders);
+    </script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechShop - <!-- DYNAMIC TITLE --></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://www.paypal.com/sdk/js?client-id=AciSSm-rPGqYd-joChlby2ThlwGukyuAA5aQ0tipPsilcjcYOH8QqASXMejbfN42fD5PaAaSy4Q5Izti&currency=EUR"></script>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">TechShop</a>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-6">
+                <img src="<!-- DYNAMIC IMAGE -->" 
+                     alt="<!-- DYNAMIC ALT -->" class="img-fluid product-image" id="productImage">
+            </div>
+            
+            <div class="col-md-6">
+                <div class="product-info">
+                    <h1 id="productName"><!-- DYNAMIC NAME --></h1>
+                    <p class="text-muted" id="productVariant"><!-- DYNAMIC VARIANT --></p>
+                    
+                    <div class="price-section mb-3">
+                        <span class="h2 text-primary" id="productPrice"><!-- DYNAMIC PRICE --></span>
+                        <span class="text-success ms-2">Op voorraad</span>
+                    </div>
+                    
+                    <p class="product-description" id="productDescription">
+                        <!-- DYNAMIC DESCRIPTION -->
+                    </p>
+                    
+                    <div class="specifications mb-4">
+                        <h5>Specificaties:</h5>
+                        <ul id="productSpecifications">
+                            <!-- DYNAMIC SPECIFICATIONS -->
+                        </ul>
+                    </div>
+                    
+                    <div class="order-form">
+                        <div class="mb-3">
+                            <label for="quantity" class="form-label">Aantal:</label>
+                            <select class="form-select" id="quantity" style="width: 100px;">
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                            </select>
+                        </div>
+                        
+                        <div id="paypal-button-container" class="mb-3"></div>
+                        
+                        <div class="shipping-info">
+                            <small class="text-muted" id="shippingInfo">
+                                <!-- DYNAMIC SHIPPING -->
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-dark text-white mt-5 py-4">
+        <div class="container text-center">
+            <p>&copy; 2024 TechShop. Alle rechten voorbehouden.</p>
+        </div>
+    </footer>
+
+    <script src="config.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
