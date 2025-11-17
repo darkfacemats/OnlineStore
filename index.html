@@ -3,79 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NorthLights - iPhone 13 Pro</title>
+    <title>TechShop - <!-- DYNAMIC TITLE --></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <script src="https://www.paypal.com/sdk/js?client-id=AciSSm-rPGqYd-joChlby2ThlwGukyuAA5aQ0tipPsilcjcYOH8QqASXMejbfN42fD5PaAaSy4Q5Izti&currency=EUR"></script>
 </head>
 <body>
-    <!-- Navigatie -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
-            <a class="navbar-brand" href="#">NorthLights</a>
+            <a class="navbar-brand" href="#">TechShop</a>
         </div>
     </nav>
 
-    <!-- Carousel Sectie -->
-    <div id="carouselExample" class="carousel slide" data-bs-ride="carousel">
-        <div class="carousel-inner">
-            <div class="carousel-item active">
-                <img src="https://via.placeholder.com/1200x400/007bff/ffffff?text=iPhone+13+Pro+-+Ultieme+Kwaliteit" class="d-block w-100" alt="iPhone 13 Pro Hoogtepunten">
-            </div>
-            <div class="carousel-item">
-                <img src="https://via.placeholder.com/1200x400/28a745/ffffff?text=Gratis+Verzending+-+30+Dagen+Retour" class="d-block w-100" alt="Gratis Verzending">
-            </div>
-            <div class="carousel-item">
-                <img src="https://via.placeholder.com/1200x400/dc3545/ffffff?text=Aanbieding:+Nu+met+2+Jaar+Garantie" class="d-block w-100" alt="Speciale Aanbieding">
-            </div>
-        </div>
-        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
-            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Previous</span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#carouselExample" data-bs-slide="next">
-            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Next</span>
-        </button>
-    </div>
-
-    <!-- Product Sectie -->
     <div class="container mt-5">
         <div class="row">
-            <!-- Product Afbeelding -->
             <div class="col-md-6">
-                <img src="https://via.placeholder.com/500x500/007bff/ffffff?text=iPhone+13+Pro" 
-                     alt="iPhone 13 Pro" class="img-fluid product-image">
+                <img src="./img/Prodict.jpeg" 
+                     alt="./img" class="img-fluid product-image" id="productImage">
             </div>
             
-            <!-- Product Info -->
             <div class="col-md-6">
                 <div class="product-info">
-                    <h1 id="productName">iPhone 13 Pro</h1>
-                    <p class="text-muted">128GB - Grafiet</p>
+                    <h1 id="productName"><!-- DYNAMIC NAME --></h1>
+                    <p class="text-muted" id="productVariant"><!-- DYNAMIC VARIANT --></p>
                     
                     <div class="price-section mb-3">
-                        <span class="h2 text-primary">€999,-</span>
+                        <span class="h2 text-primary" id="productPrice"><!-- DYNAMIC PRICE --></span>
                         <span class="text-success ms-2">Op voorraad</span>
                     </div>
                     
-                    <p class="product-description">
-                        De iPhone 13 Pro met A15 Bionic chip, ProMotion display en het beste camerasysteem ooit in een iPhone.
+                    <p class="product-description" id="productDescription">
+                        <!-- DYNAMIC DESCRIPTION -->
                     </p>
                     
-                    <!-- Specificaties -->
                     <div class="specifications mb-4">
                         <h5>Specificaties:</h5>
-                        <ul>
-                            <li>6.1-inch Super Retina XDR display</li>
-                            <li>A15 Bionic chip</li>
-                            <li>Pro 12MP camera systeem</li>
-                            <li>5G support</li>
-                            <li>Tot to 28 uur video afspelen</li>
+                        <ul id="productSpecifications">
+                            <!-- DYNAMIC SPECIFICATIONS -->
                         </ul>
                     </div>
                     
-                    <!-- Bestel Formulier -->
                     <div class="order-form">
                         <div class="mb-3">
                             <label for="quantity" class="form-label">Aantal:</label>
@@ -86,15 +53,11 @@
                             </select>
                         </div>
                         
-                        <!-- PayPal Knop -->
                         <div id="paypal-button-container" class="mb-3"></div>
                         
-                        <!-- Verzendinfo -->
                         <div class="shipping-info">
-                            <small class="text-muted">
-                                ✅ Gratis verzending<br>
-                                ✅ 30 dagen retourrecht<br>
-                                ✅ Voor 22:00 besteld, morgen in huis
+                            <small class="text-muted" id="shippingInfo">
+                                <!-- DYNAMIC SHIPPING -->
                             </small>
                         </div>
                     </div>
@@ -103,16 +66,12 @@
         </div>
     </div>
 
-    <!-- Footer -->
     <footer class="bg-dark text-white mt-5 py-4">
         <div class="container text-center">
-            <p>&copy; 2024 NorthLights. Alle rechten voorbehouden.</p>
+            <p>&copy; 2024 TechShop. Alle rechten voorbehouden.</p>
         </div>
     </footer>
 
-    <!-- Bootstrap JavaScript -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
-    
     <script src="config.js"></script>
     <script src="script.js"></script>
 </body>
