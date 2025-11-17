@@ -1,133 +1,295 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Admin - NorthLights</title>
+    <title>Admin Login - NorthLights</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .login-container {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+        }
+        .login-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .admin-panel {
+            display: none;
+        }
+    </style>
 </head>
 <body>
-    <nav class="navbar navbar-dark bg-dark">
+    <!-- Login Form -->
+    <div class="login-container" id="loginSection">
         <div class="container">
-            <span class="navbar-brand">NorthLights Admin</span>
-            <a href="index.html" class="text-white">Webwinkel</a>
-        </div>
-    </nav>
-    
-    <div class="container mt-4">
-        <h1>🛡️ Admin Dashboard</h1>
-        
-        <div class="row">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-body">
-                        <h5>Database Management</h5>
-                        <button onclick="initDB()" class="btn btn-primary mb-2">Initialize Database</button>
-                        <button onclick="testFunction()" class="btn btn-secondary mb-2">Test Function</button>
-                        <button onclick="getOrders()" class="btn btn-info mb-2">Get Orders</button>
+            <div class="row justify-content-center">
+                <div class="col-md-5">
+                    <div class="login-card p-5">
+                        <div class="text-center mb-4">
+                            <h2>🛡️ Admin Login</h2>
+                            <p class="text-muted">NorthLights Webwinkel</p>
+                        </div>
+                        
+                        <form id="loginForm">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Gebruikersnaam</label>
+                                <input type="text" class="form-control" id="username" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Wachtwoord</label>
+                                <input type="password" class="form-control" id="password" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">Inloggen</button>
+                        </form>
+                        
+                        <div id="loginError" class="alert alert-danger mt-3" style="display: none;"></div>
                     </div>
                 </div>
-            </div>
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-body">
-                        <h5>Database Status</h5>
-                        <div id="dbStatus">Niet geïnitialiseerd</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="card mt-4">
-            <div class="card-body">
-                <h5>Resultaten</h5>
-                <div id="result"></div>
             </div>
         </div>
     </div>
 
+    <!-- Admin Panel (verborgen tot login) -->
+    <div class="admin-panel" id="adminPanel">
+        <nav class="navbar navbar-dark bg-dark">
+            <div class="container">
+                <span class="navbar-brand">🛡️ NorthLights Admin</span>
+                <div class="navbar-text">
+                    <span id="adminWelcome" class="me-3"></span>
+                    <button onclick="logout()" class="btn btn-outline-light btn-sm">Uitloggen</button>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container mt-4">
+            <!-- Statistics -->
+            <div class="row mb-4" id="statsSection">
+                <div class="col-md-3">
+                    <div class="card stats-card">
+                        <div class="card-body">
+                            <h5 class="card-title">Totaal Orders</h5>
+                            <h2 id="totalOrders" class="text-primary">-</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card stats-card" style="border-left-color: #28a745;">
+                        <div class="card-body">
+                            <h5 class="card-title">Totaal Omzet</h5>
+                            <h2 id="totalRevenue" class="text-success">-</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card stats-card" style="border-left-color: #ffc107;">
+                        <div class="card-body">
+                            <h5 class="card-title">Vandaag</h5>
+                            <h2 id="todayOrders" class="text-warning">-</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card stats-card" style="border-left-color: #17a2b8;">
+                        <div class="card-body">
+                            <h5 class="card-title">Gem. Order</h5>
+                            <h2 id="avgOrder" class="text-info">-</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search and Filters -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <input type="text" id="searchInput" class="form-control" placeholder="Zoek op naam, email of order ID...">
+                        </div>
+                        <div class="col-md-3">
+                            <select id="statusFilter" class="form-select">
+                                <option value="">Alle status</option>
+                                <option value="paid">Betaald</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <button onclick="loadOrders()" class="btn btn-primary w-100">🔍 Zoeken</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Orders List -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">📦 Orders Overzicht (3 orders gevonden)</h5>
+                    <button onclick="loadOrders()" class="btn btn-sm btn-outline-primary">🔄 Vernieuwen</button>
+                </div>
+                <div class="card-body">
+                    <div id="loadingSpinner" class="text-center">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p>Orders laden...</p>
+                    </div>
+                    <div id="ordersList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        async function initDB() {
-            showLoading('Initializing database...');
-            try {
-                // Gebruik POST request
-                const response = await fetch('/.netlify/functions/init-db', {
-                    method: 'POST'
-                });
-                const data = await response.json();
-                
-                if (response.ok) {
-                    showResult(data, 'success');
-                    document.getElementById('dbStatus').innerHTML = 
-                        '<span class="text-success">✅ Database geïnitialiseerd</span>';
-                } else {
-                    throw new Error(data.error || 'Initialisatie mislukt');
-                }
-            } catch (error) {
-                showResult({ error: error.message }, 'error');
-                document.getElementById('dbStatus').innerHTML = 
-                    '<span class="text-danger">❌ Database fout</span>';
-            }
-        }
+        // Login credentials (eenvoudige beveiliging)
+        const ADMIN_CREDENTIALS = {
+            username: "admin",
+            password: "northlights2024"
+        };
 
-        async function testFunction() {
-            showLoading('Testing function...');
-            try {
-                const response = await fetch('/.netlify/functions/test');
-                const data = await response.json();
-                showResult(data, 'success');
-            } catch (error) {
-                showResult({ error: error.message }, 'error');
-            }
-        }
-
-        async function getOrders() {
-            showLoading('Loading orders...');
-            try {
-                const response = await fetch('/.netlify/functions/get-orders');
-                const data = await response.json();
-                showResult(data, 'success');
-            } catch (error) {
-                showResult({ error: error.message }, 'error');
-            }
-        }
-
-        function showResult(data, type) {
-            const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
-            document.getElementById('result').innerHTML = `
-                <div class="alert ${alertClass}">
-                    <pre>${JSON.stringify(data, null, 2)}</pre>
-                </div>
-            `;
-        }
-
-        function showLoading(message) {
-            document.getElementById('result').innerHTML = `
-                <div class="alert alert-info">
-                    <div class="spinner-border spinner-border-sm" role="status"></div>
-                    ${message}
-                </div>
-            `;
-        }
-
-        // Check database status bij laden
+        // Check of gebruiker al ingelogd is
         document.addEventListener('DOMContentLoaded', function() {
-            checkDBStatus();
+            const savedUser = localStorage.getItem('adminLoggedIn');
+            if (savedUser) {
+                showAdminPanel();
+            }
         });
 
-        async function checkDBStatus() {
+        // Login form handler
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('loginError');
+
+            if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
+                // Succesvol ingelogd
+                localStorage.setItem('adminLoggedIn', 'true');
+                showAdminPanel();
+            } else {
+                // Foute credentials
+                errorDiv.textContent = 'Ongeldige gebruikersnaam of wachtwoord';
+                errorDiv.style.display = 'block';
+            }
+        });
+
+        function showAdminPanel() {
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('adminPanel').style.display = 'block';
+            document.getElementById('adminWelcome').textContent = `Welkom, ${ADMIN_CREDENTIALS.username}`;
+            
+            // Laad data
+            loadOrders();
+            loadStats();
+        }
+
+        function logout() {
+            localStorage.removeItem('adminLoggedIn');
+            document.getElementById('loginSection').style.display = 'flex';
+            document.getElementById('adminPanel').style.display = 'none';
+            document.getElementById('loginForm').reset();
+            document.getElementById('loginError').style.display = 'none';
+        }
+
+        // Admin functionaliteit (zelfde als voorheen)
+        async function loadOrders() {
+            showLoading(true);
             try {
                 const response = await fetch('/.netlify/functions/get-orders');
-                if (response.ok) {
-                    document.getElementById('dbStatus').innerHTML = 
-                        '<span class="text-success">✅ Database verbonden</span>';
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    displayOrders(result.data);
                 } else {
-                    document.getElementById('dbStatus').innerHTML = 
-                        '<span class="text-warning">⚠️ Database niet klaar</span>';
+                    throw new Error(result.error || 'Failed to load orders');
                 }
             } catch (error) {
-                document.getElementById('dbStatus').innerHTML = 
-                    '<span class="text-danger">❌ Geen verbinding</span>';
+                console.error('Error loading orders:', error);
+                document.getElementById('ordersList').innerHTML = `
+                    <div class="alert alert-danger">
+                        <h5>❌ Fout bij laden orders</h5>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            } finally {
+                showLoading(false);
             }
         }
+
+        function displayOrders(orders) {
+            const ordersList = document.getElementById('ordersList');
+            
+            if (orders.length === 0) {
+                ordersList.innerHTML = `
+                    <div class="alert alert-info text-center">
+                        <h5>📭 Geen orders gevonden</h5>
+                        <p>Er zijn nog geen orders geplaatst.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            ordersList.innerHTML = orders.map(order => `
+                <div class="card order-card mb-3">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h6 class="card-title">Order #${order.id} - ${order.product_name}</h6>
+                                <p class="mb-1"><strong>Klant:</strong> ${order.customer_name} (${order.customer_email})</p>
+                                <p class="mb-1"><strong>Bedrag:</strong> €${parseFloat(order.amount).toFixed(2)} ${order.currency}</p>
+                                <p class="mb-1"><strong>Aantal:</strong> ${order.quantity} stuks</p>
+                                <p class="mb-1"><strong>Datum:</strong> ${new Date(order.created_at).toLocaleString('nl-NL')}</p>
+                                <p class="mb-0"><strong>Status:</strong> 
+                                    <span class="badge bg-success">${order.status}</span>
+                                </p>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <div class="mt-2">
+                                    <small class="text-muted">PayPal: ${order.order_id}</small>
+                                </div>
+                            </div>
+                        </div>
+                        ${order.address_line1 ? `
+                            <div class="mt-2 p-2 bg-light rounded">
+                                <small><strong>Verzendadres:</strong> 
+                                ${order.address_line1} ${order.address_line2 || ''}, 
+                                ${order.postal_code} ${order.city}, 
+                                ${order.country}</small>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function loadStats() {
+            try {
+                const response = await fetch('/.netlify/functions/get-stats');
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    document.getElementById('totalOrders').textContent = result.data.totalOrders;
+                    document.getElementById('totalRevenue').textContent = '€' + parseFloat(result.data.totalRevenue).toFixed(2);
+                    document.getElementById('todayOrders').textContent = result.data.todayOrders;
+                    document.getElementById('avgOrder').textContent = '€' + parseFloat(result.data.avgOrder).toFixed(2);
+                }
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        function showLoading(show) {
+            document.getElementById('loadingSpinner').style.display = show ? 'block' : 'none';
+            if (!show) {
+                document.getElementById('ordersList').style.display = 'block';
+            }
+        }
+
+        // Search on enter
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') loadOrders();
+        });
     </script>
 </body>
 </html>
