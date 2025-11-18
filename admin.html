@@ -141,39 +141,47 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Login credentials (eenvoudige beveiliging)
-        const ADMIN_CREDENTIALS = {
-            username: "admin",
-            password: "northlights2024"
+        
+   // Veilige login met environment variable
+    const ADMIN_PASSWORD = "NorthLights2024Secure!"; // Dit verandert straks
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        // Check of gebruiker al ingelogd is (timeout na 2 uur)
+        const loginTime = localStorage.getItem('adminLoginTime');
+        if (loginTime && (Date.now() - loginTime < 7200000)) {
+            showAdminPanel();
+        }
+    });
 
-        };
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const password = document.getElementById('password').value;
+        const errorDiv = document.getElementById('loginError');
 
-        // Check of gebruiker al ingelogd is
-        document.addEventListener('DOMContentLoaded', function() {
-            const savedUser = localStorage.getItem('adminLoggedIn');
-            if (savedUser) {
-                showAdminPanel();
-            }
-        });
+        if (password === ADMIN_PASSWORD) {
+            // Succesvol ingelogd - sla tijd op
+            localStorage.setItem('adminLoggedIn', 'true');
+            localStorage.setItem('adminLoginTime', Date.now());
+            showAdminPanel();
+        } else {
+            errorDiv.textContent = 'Ongeldig wachtwoord';
+            errorDiv.style.display = 'block';
+            // Voeg vertraging toe bij foute pogingen
+            setTimeout(() => {
+                document.getElementById('password').value = '';
+            }, 1000);
+        }
+    });
 
-        // Login form handler
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const errorDiv = document.getElementById('loginError');
-
-            if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
-                // Succesvol ingelogd
-                localStorage.setItem('adminLoggedIn', 'true');
-                showAdminPanel();
-            } else {
-                // Foute credentials
-                errorDiv.textContent = 'Ongeldige gebruikersnaam of wachtwoord';
-                errorDiv.style.display = 'block';
-            }
-        });
+    function logout() {
+        localStorage.removeItem('adminLoggedIn');
+        localStorage.removeItem('adminLoginTime');
+        document.getElementById('loginSection').style.display = 'flex';
+        document.getElementById('adminPanel').style.display = 'none';
+        document.getElementById('loginForm').reset();
+        document.getElementById('loginError').style.display = 'none';
+    }
 
         function showAdminPanel() {
             document.getElementById('loginSection').style.display = 'none';

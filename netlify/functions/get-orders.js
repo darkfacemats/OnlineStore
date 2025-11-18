@@ -3,8 +3,8 @@ import { neon } from '@neondatabase/serverless';
 export const handler = async function(event, context) {
     console.log('Get orders function called');
     
-    // Accepteer zowel GET als POST
-    if (!['GET', 'POST'].includes(event.httpMethod)) {
+    // Alleen GET requests
+    if (event.httpMethod !== 'GET') {
         return {
             statusCode: 405,
             body: JSON.stringify({ error: 'Method Not Allowed' })
@@ -12,17 +12,40 @@ export const handler = async function(event, context) {
     }
 
     try {
-        console.log('Connecting to database...');
         const sql = neon(process.env.NETLIFY_DATABASE_URL);
-        console.log('Database connected successfully');
         
-        // Simpele query om orders op te halen
-        const orders = await sql`
-            SELECT * FROM orders 
-            ORDER BY created_at DESC
-        `;
+        // Query parameters met validatie
+        const { search, status, limit = 50, offset = 0 } = event.queryStringParameters || {};
         
-        console.log(`Found ${orders.length} orders`);
+        // Limit validatie (max 100 orders per request)
+        const safeLimit = Math.min(parseInt(limit), 100);
+        const safeOffset = Math.max(0, parseInt(offset));
+
+        let query = sql`SELECT * FROM orders`;
+        const conditions = [];
+
+        // Search validatie (max 100 karakters)
+        if (search && search.length <= 100) {
+            conditions.push(sql`(customer_name ILIKE ${'%' + search + '%'} OR customer_email ILIKE ${'%' + search + '%'} OR order_id = ${search})`);
+        }
+        
+        // Status validatie
+        const allowedStatuses = ['paid', 'shipped', 'delivered', 'cancelled'];
+        if (status && allowedStatuses.includes(status)) {
+            conditions.push(sql`status = ${status}`);
+        }
+
+        if (conditions.length > 0) {
+            query = sql`${query} WHERE ${conditions.reduce((acc, cond) => acc ? sql`${acc} AND ${cond}` : cond)}`;
+        }
+
+        query = sql`${query} ORDER BY created_at DESC LIMIT ${safeLimit} OFFSET ${safeOffset}`;
+
+        const orders = await query;
+
+        // Tel totaal (veilige manier)
+        const countResult = await sql`SELECT COUNT(*) as total FROM orders`;
+        const total = parseInt(countResult[0].total);
 
         return {
             statusCode: 200,
@@ -32,34 +55,21 @@ export const handler = async function(event, context) {
             body: JSON.stringify({
                 success: true,
                 data: orders,
-                count: orders.length,
                 pagination: {
-                    total: orders.length,
-                    limit: 50,
-                    offset: 0
+                    total: total,
+                    limit: safeLimit,
+                    offset: safeOffset
                 }
             })
         };
 
     } catch (error) {
         console.error('Get orders error:', error);
-        
-        // Meer specifieke error messages
-        let errorMessage = 'Failed to fetch orders';
-        if (error.message.includes('relation "orders" does not exist')) {
-            errorMessage = 'Orders table does not exist yet. Run database initialization first.';
-        } else if (error.message.includes('connection')) {
-            errorMessage = 'Database connection failed. Check environment variables.';
-        } else {
-            errorMessage = `Database error: ${error.message}`;
-        }
-
         return {
             statusCode: 500,
             body: JSON.stringify({ 
                 success: false,
-                error: errorMessage,
-                details: process.env.NODE_ENV === 'development' ? error.stack : 'Contact support'
+                error: 'Failed to fetch orders'
             })
         };
     }

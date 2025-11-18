@@ -5,10 +5,27 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeProduct();
     initializePayPal();
 });
+function loadCarouselImages(images) {
+    const carouselInner = document.getElementById("carouselInner");
+    carouselInner.innerHTML = "";
+
+    images.forEach((src, index) => {
+        if (!src) return;
+
+        const item = document.createElement("div");
+        item.classList.add("carousel-item");
+        if (index === 0) item.classList.add("active");
+
+        item.innerHTML = `<img src="${src}" class="d-block w-100">`;
+        carouselInner.appendChild(item);
+    });
+}
+
+loadCarouselImages(PRODUCT_CONFIG.images);
 
 function initializeProduct() {
     // Update alle product informatie op de pagina
-    document.title = `TechShop - ${PRODUCT_CONFIG.name}`;
+    document.title = `NorthLights - ${PRODUCT_CONFIG.name}`;
     document.getElementById('productName').textContent = PRODUCT_CONFIG.name;
     document.getElementById('productImage').src = PRODUCT_CONFIG.image;
     document.getElementById('productImage').alt = PRODUCT_CONFIG.name;
@@ -58,7 +75,7 @@ function initializePayPal() {
         onApprove: function(data, actions) {
             console.log('✅ Betaling goedgekeurd:', data.orderID);
             
-            return actions.order.capture().then(function(details) {
+            return actions.order.capture().then(async function(details) {
                 console.log('🎉 BETALING VOLTOOID:', details);
                 
                 // Bereid order data voor
@@ -87,11 +104,28 @@ function initializePayPal() {
                     };
                 }
 
-                // Redirect naar succes pagina met order data
-                const successUrl = new URL('success.html', window.location.href);
-                successUrl.searchParams.set('orderData', encodeURIComponent(JSON.stringify(orderData)));
-                window.location.href = successUrl.toString();
+                // 🔒 BEVEILIGDE DATABASE OPSLAG
+                try {
+                    console.log('🔄 Opslaan in database...');
+                    const saveResult = await saveOrderToDatabase(orderData);
+                    console.log('✅ Order opgeslagen:', saveResult);
+                    
+                    // Redirect naar succes pagina met order data
+                    const successUrl = new URL('success.html', window.location.href);
+                    successUrl.searchParams.set('orderData', encodeURIComponent(JSON.stringify(orderData)));
+                    successUrl.searchParams.set('dbSuccess', 'true');
+                    successUrl.searchParams.set('dbOrderId', saveResult.orderId);
+                    window.location.href = successUrl.toString();
 
+                } catch (error) {
+                    console.error('❌ Database opslag mislukt:', error);
+                    
+                    // Toch door naar succes pagina maar met warning
+                    const successUrl = new URL('success.html', window.location.href);
+                    successUrl.searchParams.set('orderData', encodeURIComponent(JSON.stringify(orderData)));
+                    successUrl.searchParams.set('dbError', encodeURIComponent(error.message));
+                    window.location.href = successUrl.toString();
+                }
             });
         },
 
@@ -117,4 +151,38 @@ function initializePayPal() {
         const total = PRODUCT_CONFIG.price * quantity;
         console.log(`Aantal: ${quantity}, Totaal: €${total.toFixed(2)}`);
     });
+}
+
+// 🔒 BEVEILIGDE DATABASE OPSLAG FUNCTIE
+async function saveOrderToDatabase(orderData) {
+    try {
+        const response = await fetch('/.netlify/functions/create-order', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(orderData)
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            // Toon gebruikersvriendelijke error
+            if (response.status === 409) {
+                throw new Error('Deze bestelling is al verwerkt.');
+            } else if (response.status === 429) {
+                throw new Error('Te veel verzoeken. Probeer het over een minuut opnieuw.');
+            } else if (response.status === 400) {
+                throw new Error('Ongeldige bestelgegevens: ' + (result.error || ''));
+            } else {
+                throw new Error(result.error || 'Bestelling opslaan mislukt.');
+            }
+        }
+
+        return result;
+
+    } catch (error) {
+        console.error('Database error:', error);
+        throw error;
+    }
 }
